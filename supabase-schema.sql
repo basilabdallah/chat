@@ -285,8 +285,11 @@ CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON public.messages
 CREATE OR REPLACE FUNCTION add_room_creator_as_owner()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.room_members (room_id, user_id, role)
-  VALUES (NEW.id, NEW.created_by, 'owner');
+  -- Only insert if created_by is not null
+  IF NEW.created_by IS NOT NULL THEN
+    INSERT INTO public.room_members (room_id, user_id, role)
+    VALUES (NEW.id, NEW.created_by, 'owner');
+  END IF;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -313,7 +316,39 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Create a default "General" room
-INSERT INTO public.rooms (name, description, type, is_private)
-VALUES ('General', 'Welcome to the general chat room!', 'channel', false)
-ON CONFLICT DO NOTHING;
+-- Function to auto-join new users to the General room
+CREATE OR REPLACE FUNCTION auto_join_general_room()
+RETURNS TRIGGER AS $$
+DECLARE
+  general_room_id UUID;
+BEGIN
+  -- Find the General room
+  SELECT id INTO general_room_id
+  FROM public.rooms
+  WHERE name = 'General'
+  LIMIT 1;
+  
+  -- If General room exists, add the new user as a member
+  IF general_room_id IS NOT NULL THEN
+    INSERT INTO public.room_members (room_id, user_id, role)
+    VALUES (general_room_id, NEW.id, 'member')
+    ON CONFLICT (room_id, user_id) DO NOTHING;
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to auto-join new profiles to General room
+CREATE TRIGGER on_profile_created AFTER INSERT ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION auto_join_general_room();
+
+-- Create a default "General" room (created_by will be null, which is fine for system rooms)
+-- Note: You can manually add members to this room, or it will be auto-joined by users
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM public.rooms WHERE name = 'General') THEN
+    INSERT INTO public.rooms (name, description, type, is_private, created_by)
+    VALUES ('General', 'Welcome to the general chat room!', 'channel', false, NULL);
+  END IF;
+END $$;

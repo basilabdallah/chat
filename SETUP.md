@@ -1,6 +1,10 @@
 # Quick Setup Guide
 
-Follow these steps to get your Creative Chat application running:
+Follow these steps to get your Creative Chat application running.
+
+> 📋 **Track your progress**: Use [SETUP_CHECKLIST.md](SETUP_CHECKLIST.md) to check off each step!
+
+> 🚀 **Even faster**: See [QUICK_START.md](QUICK_START.md) for the 5-minute version!
 
 ## Step 1: Install Dependencies
 

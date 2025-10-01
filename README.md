@@ -2,6 +2,12 @@
 
 A professional, modern web chat application built with Next.js, TypeScript, and Supabase. Features a beautiful, relaxing UI with rounded corners, no shadows, and a focus on excellent UX.
 
+> 👋 **New here?** Start with **[START_HERE.md](START_HERE.md)** for a guided introduction!
+
+> 🚀 **Just want to get started?** Check out the [QUICK_START.md](QUICK_START.md) guide!
+
+> ⚠️ **Having issues?** See [TROUBLESHOOTING.md](TROUBLESHOOTING.md) for solutions.
+
 ## Features
 
 ### Core Features
@@ -43,6 +49,38 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 - **Animations**: Framer Motion
 - **Notifications**: react-hot-toast
 
+## 📚 Documentation (15 Comprehensive Guides)
+
+### 🚀 Getting Started
+| Guide | Description |
+|-------|-------------|
+| **[START_HERE.md](START_HERE.md)** | 👋 Perfect entry point for new users |
+| **[QUICK_START.md](QUICK_START.md)** | ⚡ 5-minute setup guide |
+| **[SETUP_CHECKLIST.md](SETUP_CHECKLIST.md)** | ✅ Track your progress |
+
+### 🔧 Setup & Configuration
+| **[SUPABASE_SETUP.md](SUPABASE_SETUP.md)** | 🗄️ Detailed database setup |
+| **[SETUP.md](SETUP.md)** | 📝 Alternative setup guide |
+
+### 📖 Reference & Learning
+| **[FEATURES.md](FEATURES.md)** | ✨ Complete feature list |
+| **[ARCHITECTURE.md](ARCHITECTURE.md)** | 🏗️ System architecture diagrams |
+| **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** | 📊 What was built |
+| **[FILE_MANIFEST.md](FILE_MANIFEST.md)** | 📁 Complete file listing |
+
+### 🐛 Help & Support
+| **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** | 🔧 Common issues solved |
+
+### 🚀 Deployment
+| **[DEPLOYMENT.md](DEPLOYMENT.md)** | 🌐 Production deployment |
+
+### 🤝 Contributing
+| **[CONTRIBUTING.md](CONTRIBUTING.md)** | 💡 How to contribute |
+
+### 📋 Navigation
+| **[DOCS_INDEX.md](DOCS_INDEX.md)** | 🗺️ Documentation map |
+| **[PROJECT_COMPLETE.md](PROJECT_COMPLETE.md)** | 🎉 Project completion summary |
+
 ## Getting Started
 
 ### Prerequisites
@@ -65,10 +103,15 @@ npm install
 
 ### 3. Set Up Supabase
 
+> **Detailed instructions**: See [SUPABASE_SETUP.md](SUPABASE_SETUP.md) for step-by-step guide
+
+**Quick steps:**
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to your project's SQL Editor
-3. Run the SQL schema from `supabase-schema.sql` file
-4. Go to Project Settings > API to get your credentials
+3. Copy and paste the entire `supabase-schema.sql` file
+4. Click "Run" to execute the schema
+5. Enable Realtime for: messages, reactions, typing_indicators, profiles
+6. Go to Project Settings > API to get your credentials
 
 ### 4. Configure Environment Variables
 

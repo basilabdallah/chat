@@ -1,6 +1,9 @@
 {
   "name": "creative-chat-app",
   "version": "1.0.0",
+  "description": "A professional, modern real-time chat application built with Next.js, TypeScript, and Supabase",
+  "author": "Creative Chat Team",
+  "license": "MIT",
   "private": true,
   "scripts": {
     "dev": "next dev",
