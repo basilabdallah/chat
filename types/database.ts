@@ -114,7 +114,7 @@ export interface Database {
           room_id: string
           user_id: string | null
           content: string
-          type: 'text' | 'image' | 'file' | 'system'
+          type: 'text' | 'image' | 'file' | 'audio' | 'video' | 'system'
           file_url: string | null
           file_name: string | null
           file_size: number | null
@@ -129,7 +129,7 @@ export interface Database {
           room_id: string
           user_id?: string | null
           content: string
-          type?: 'text' | 'image' | 'file' | 'system'
+          type?: 'text' | 'image' | 'file' | 'audio' | 'video' | 'system'
           file_url?: string | null
           file_name?: string | null
           file_size?: number | null
@@ -144,7 +144,7 @@ export interface Database {
           room_id?: string
           user_id?: string | null
           content?: string
-          type?: 'text' | 'image' | 'file' | 'system'
+          type?: 'text' | 'image' | 'file' | 'audio' | 'video' | 'system'
           file_url?: string | null
           file_name?: string | null
           file_size?: number | null

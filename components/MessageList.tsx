@@ -7,6 +7,7 @@ import { MessageWithProfile } from '@/types'
 import { formatDistanceToNow, format } from 'date-fns'
 import Image from 'next/image'
 import EmojiPicker from 'emoji-picker-react'
+import AudioPlayer from './AudioPlayer'
 
 export default function MessageList() {
   const { messages, typingUsers, addReaction, removeReaction, editMessage, deleteMessage } = useChat()
@@ -175,26 +176,78 @@ function MessageBubble({ message, isOwn, onAddReaction, onRemoveReaction, onEdit
               </div>
             </div>
           ) : (
-            <div
-              className={`message-bubble rounded-2xl px-4 py-2 ${
-                isOwn
-                  ? 'bg-primary-500 text-white'
-                  : message.is_deleted
-                  ? 'bg-neutral-100 text-neutral-500 italic'
-                  : 'bg-white border border-neutral-200 text-neutral-900'
-              }`}
-            >
-              {message.is_deleted ? (
-                <span className="text-sm">{message.content}</span>
-              ) : (
-                <>
-                  <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                  {message.is_edited && (
-                    <span className={`text-xs ${isOwn ? 'text-primary-200' : 'text-neutral-500'} ml-2`}>
-                      (edited)
-                    </span>
+            <div>
+              {/* Audio Message */}
+              {message.type === 'audio' && message.file_url && (
+                <AudioPlayer audioUrl={message.file_url} />
+              )}
+
+              {/* Image Message */}
+              {message.type === 'image' && message.file_url && (
+                <div className="rounded-xl overflow-hidden max-w-sm">
+                  <img 
+                    src={message.file_url} 
+                    alt={message.file_name || 'Image'} 
+                    className="w-full h-auto cursor-pointer hover:opacity-90 transition-smooth"
+                    onClick={() => window.open(message.file_url!, '_blank')}
+                  />
+                  {message.content !== message.file_name && (
+                    <p className="text-sm mt-2 px-4 py-2 bg-white rounded-xl">{message.content}</p>
                   )}
-                </>
+                </div>
+              )}
+
+              {/* File Message */}
+              {message.type === 'file' && message.file_url && (
+                <a
+                  href={message.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-white rounded-xl border border-neutral-200 hover:border-primary-300 transition-smooth"
+                >
+                  <div className="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <svg className="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-neutral-900 truncate">{message.file_name || message.content}</p>
+                    {message.file_size && (
+                      <p className="text-xs text-neutral-500">
+                        {(message.file_size / 1024).toFixed(1)} KB
+                      </p>
+                    )}
+                  </div>
+                  <svg className="w-5 h-5 text-neutral-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </a>
+              )}
+
+              {/* Text Message */}
+              {message.type === 'text' && (
+                <div
+                  className={`message-bubble rounded-2xl px-4 py-2 ${
+                    isOwn
+                      ? 'bg-primary-500 text-white'
+                      : message.is_deleted
+                      ? 'bg-neutral-100 text-neutral-500 italic'
+                      : 'bg-white border border-neutral-200 text-neutral-900'
+                  }`}
+                >
+                  {message.is_deleted ? (
+                    <span className="text-sm">{message.content}</span>
+                  ) : (
+                    <>
+                      <p className="text-sm whitespace-pre-wrap break-words">{message.content}</p>
+                      {message.is_edited && (
+                        <span className={`text-xs ${isOwn ? 'text-primary-200' : 'text-neutral-500'} ml-2`}>
+                          (edited)
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
               )}
             </div>
           )}

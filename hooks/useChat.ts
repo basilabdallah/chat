@@ -6,7 +6,7 @@ import { MessageWithProfile, RoomWithDetails, Profile } from '@/types'
 import toast from 'react-hot-toast'
 
 export function useChat() {
-  const { user } = useAuthStore()
+  const { user, profile } = useAuthStore()
   const {
     rooms,
     currentRoom,
@@ -115,6 +115,15 @@ export function useChat() {
 
       if (error) throw error
 
+      // Broadcast new message event
+      if (data) {
+        await supabase.channel(`room:${currentRoom.id}`).send({
+          type: 'broadcast',
+          event: 'new_message',
+          payload: { message_id: data.id }
+        })
+      }
+
       // Clear typing indicator
       await clearTypingIndicator()
     } catch (error: any) {
@@ -125,7 +134,7 @@ export function useChat() {
 
   // Edit message
   const editMessage = async (messageId: string, newContent: string) => {
-    if (!user) return
+    if (!user || !currentRoom) return
 
     try {
       const { error } = await supabase
@@ -138,6 +147,14 @@ export function useChat() {
         .eq('user_id', user.id)
 
       if (error) throw error
+      
+      // Broadcast message updated event
+      await supabase.channel(`room:${currentRoom.id}`).send({
+        type: 'broadcast',
+        event: 'message_updated',
+        payload: { message_id: messageId }
+      })
+      
       toast.success('Message updated')
     } catch (error: any) {
       console.error('Error editing message:', error)
@@ -147,7 +164,7 @@ export function useChat() {
 
   // Delete message
   const deleteMessageAction = async (messageId: string) => {
-    if (!user) return
+    if (!user || !currentRoom) return
 
     try {
       const { error } = await supabase
@@ -160,6 +177,14 @@ export function useChat() {
         .eq('user_id', user.id)
 
       if (error) throw error
+      
+      // Broadcast message deleted event
+      await supabase.channel(`room:${currentRoom.id}`).send({
+        type: 'broadcast',
+        event: 'message_deleted',
+        payload: { message_id: messageId }
+      })
+      
       toast.success('Message deleted')
     } catch (error: any) {
       console.error('Error deleting message:', error)
@@ -169,7 +194,7 @@ export function useChat() {
 
   // Add reaction
   const addReaction = async (messageId: string, emoji: string) => {
-    if (!user) return
+    if (!user || !currentRoom) return
 
     try {
       const { error } = await supabase
@@ -181,6 +206,13 @@ export function useChat() {
         })
 
       if (error) throw error
+      
+      // Broadcast reaction added event
+      await supabase.channel(`room:${currentRoom.id}`).send({
+        type: 'broadcast',
+        event: 'reaction_added',
+        payload: { message_id: messageId }
+      })
     } catch (error: any) {
       console.error('Error adding reaction:', error)
       toast.error('Failed to add reaction')
@@ -189,7 +221,7 @@ export function useChat() {
 
   // Remove reaction
   const removeReaction = async (messageId: string, emoji: string) => {
-    if (!user) return
+    if (!user || !currentRoom) return
 
     try {
       const { error } = await supabase
@@ -200,6 +232,13 @@ export function useChat() {
         .eq('emoji', emoji)
 
       if (error) throw error
+      
+      // Broadcast reaction added event (to refresh)
+      await supabase.channel(`room:${currentRoom.id}`).send({
+        type: 'broadcast',
+        event: 'reaction_added',
+        payload: { message_id: messageId }
+      })
     } catch (error: any) {
       console.error('Error removing reaction:', error)
     }
@@ -215,13 +254,12 @@ export function useChat() {
         clearTimeout(typingTimeoutRef.current)
       }
 
-      // Upsert typing indicator
-      await supabase
-        .from('typing_indicators')
-        .upsert({
-          room_id: currentRoom.id,
-          user_id: user.id,
-        })
+      // Broadcast typing event
+      await supabase.channel(`room:${currentRoom.id}`).send({
+        type: 'broadcast',
+        event: 'user_typing',
+        payload: { user: { id: user.id, username: profile?.username, display_name: profile?.display_name } }
+      })
 
       // Auto-clear after 3 seconds
       typingTimeoutRef.current = setTimeout(() => {
@@ -237,12 +275,6 @@ export function useChat() {
     if (!user || !currentRoom) return
 
     try {
-      await supabase
-        .from('typing_indicators')
-        .delete()
-        .eq('room_id', currentRoom.id)
-        .eq('user_id', user.id)
-
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current)
       }
@@ -327,119 +359,72 @@ export function useChat() {
     }
   }
 
-  // Set up real-time subscriptions
+  // Set up real-time subscriptions using broadcast (works without replication)
   useEffect(() => {
-    if (!user) return
+    if (!user || !currentRoom) return
 
-    // Subscribe to new messages
-    const messagesChannel = supabase
-      .channel('messages')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        },
-        async (payload) => {
-          const newMessage = payload.new as any
-          
-          // Fetch complete message with profile and reactions
-          const { data } = await supabase
-            .from('messages')
-            .select(`
+    // Create a unique channel for this room
+    const roomChannel = supabase.channel(`room:${currentRoom.id}`)
+
+    // Subscribe to broadcast events
+    roomChannel
+      .on('broadcast', { event: 'new_message' }, async (payload) => {
+        const messageId = payload.payload.message_id
+        
+        // Fetch the complete message
+        const { data } = await supabase
+          .from('messages')
+          .select(`
+            *,
+            profile:profiles (*),
+            reactions (
               *,
-              profile:profiles (*),
-              reactions (
-                *,
-                profile:profiles (*)
-              )
-            `)
-            .eq('id', newMessage.id)
-            .single()
+              profile:profiles (*)
+            )
+          `)
+          .eq('id', messageId)
+          .single()
 
-          if (data && data.room_id === currentRoom?.id) {
-            addMessage(data as MessageWithProfile)
-          }
+        if (data) {
+          addMessage(data as MessageWithProfile)
         }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'messages',
-        },
-        async (payload) => {
-          const updatedMessage = payload.new as any
-          if (updatedMessage.room_id === currentRoom?.id) {
-            updateMessage(updatedMessage.id, updatedMessage)
-          }
+      })
+      .on('broadcast', { event: 'message_updated' }, async (payload) => {
+        const messageId = payload.payload.message_id
+        
+        // Fetch updated message
+        const { data } = await supabase
+          .from('messages')
+          .select('*')
+          .eq('id', messageId)
+          .single()
+
+        if (data) {
+          updateMessage(messageId, data)
         }
-      )
-      .subscribe()
-
-    // Subscribe to reactions
-    const reactionsChannel = supabase
-      .channel('reactions')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'reactions',
-        },
-        async () => {
-          // Refetch messages to update reactions
-          if (currentRoom) {
-            await fetchMessages(currentRoom.id)
-          }
-        }
-      )
-      .subscribe()
-
-    // Subscribe to typing indicators
-    const typingChannel = supabase
-      .channel('typing')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'typing_indicators',
-        },
-        async (payload) => {
-          if (payload.new && (payload.new as any).room_id === currentRoom?.id) {
-            const userId = (payload.new as any).user_id
-            if (userId !== user.id) {
-              const { data: profile } = await supabase
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .single()
-
-              if (profile) {
-                addTypingUser(profile as Profile)
-                
-                // Auto-remove after 3 seconds
-                setTimeout(() => {
-                  removeTypingUser(userId)
-                }, 3000)
-              }
-            }
-          }
+      })
+      .on('broadcast', { event: 'message_deleted' }, (payload) => {
+        deleteMessage(payload.payload.message_id)
+      })
+      .on('broadcast', { event: 'reaction_added' }, async () => {
+        // Refetch messages to update reactions
+        await fetchMessages(currentRoom.id)
+      })
+      .on('broadcast', { event: 'user_typing' }, (payload) => {
+        const typingUser = payload.payload.user
+        if (typingUser.id !== user.id) {
+          addTypingUser(typingUser as Profile)
           
-          if (payload.old && payload.eventType === 'DELETE') {
-            removeTypingUser((payload.old as any).user_id)
-          }
+          // Auto-remove after 3 seconds
+          setTimeout(() => {
+            removeTypingUser(typingUser.id)
+          }, 3000)
         }
-      )
+      })
       .subscribe()
 
     return () => {
-      messagesChannel.unsubscribe()
-      reactionsChannel.unsubscribe()
-      typingChannel.unsubscribe()
+      roomChannel.unsubscribe()
     }
   }, [user, currentRoom])
 

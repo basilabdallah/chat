@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS public.messages (
   room_id UUID REFERENCES public.rooms(id) ON DELETE CASCADE NOT NULL,
   user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   content TEXT NOT NULL,
-  type TEXT DEFAULT 'text' CHECK (type IN ('text', 'image', 'file', 'system')),
+  type TEXT DEFAULT 'text' CHECK (type IN ('text', 'image', 'file', 'audio', 'video', 'system')),
   file_url TEXT,
   file_name TEXT,
   file_size INTEGER,
@@ -342,6 +342,24 @@ $$ LANGUAGE plpgsql;
 -- Trigger to auto-join new profiles to General room
 CREATE TRIGGER on_profile_created AFTER INSERT ON public.profiles
   FOR EACH ROW EXECUTE FUNCTION auto_join_general_room();
+
+-- Create storage bucket for chat files
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('chat-files', 'chat-files', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage policies for chat files
+CREATE POLICY "Users can upload files"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'chat-files' AND auth.uid()::text = (storage.foldername(name))[1]);
+
+CREATE POLICY "Anyone can view files"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'chat-files');
+
+CREATE POLICY "Users can delete own files"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'chat-files' AND auth.uid()::text = (storage.foldername(name))[1]);
 
 -- Create a default "General" room (created_by will be null, which is fine for system rooms)
 -- Note: You can manually add members to this room, or it will be auto-joined by users

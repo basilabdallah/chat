@@ -12,7 +12,7 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 
 ### Core Features
 - 🔐 **User Authentication** - Secure sign up/sign in with Supabase Auth
-- 💬 **Real-time Messaging** - Instant message delivery with Supabase Realtime
+- 💬 **Real-time Messaging** - Instant message delivery (works without replication!)
 - 🏠 **Multiple Chat Rooms** - Create and join group channels
 - 👥 **User Presence** - See who's online, away, or busy
 - ⚡ **Typing Indicators** - Know when someone is typing
@@ -22,12 +22,24 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 - 🎨 **Beautiful UI** - Modern, professional design with relaxing colors
 - 📱 **Responsive Design** - Works on desktop and mobile devices
 
-### Advanced Features
-- Real-time message synchronization across all clients
+### 🚀 Advanced Features (NEW!)
+- 🎙️ **Voice Messages** - Record and send voice messages with real-time visualization
+- 📎 **File Sharing** - Drag & drop file upload with image preview (up to 50MB)
+- 🖼️ **Rich Media Display** - Images show inline, files with custom cards
+- 🎵 **Audio Playback** - Professional audio player with speed control
+- ⚡ **Broadcast Realtime** - Works without Supabase Replication dashboard
+- 🎬 **Smooth Animations** - Framer Motion powered interactions
+- 📥 **Smart Upload** - Progress bars, file type detection, previews
+
+> 📖 **See [ADVANCED_FEATURES.md](ADVANCED_FEATURES.md) for detailed documentation**
+
+### Technical Features
+- Real-time broadcast channels (no replication needed!)
 - User profiles with avatars (auto-generated with DiceBear)
 - Room member management with roles (owner, admin, member)
+- Supabase Storage for files (50MB limit)
 - Message reactions with emoji picker
-- Typing indicators that auto-clear
+- Typing indicators with broadcast events
 - Message edit history tracking
 - Online/offline status tracking
 - Last seen timestamps
@@ -49,7 +61,7 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 - **Animations**: Framer Motion
 - **Notifications**: react-hot-toast
 
-## 📚 Documentation (15 Comprehensive Guides)
+## 📚 Documentation (19 Comprehensive Guides)
 
 ### 🚀 Getting Started
 | Guide | Description |
@@ -64,6 +76,7 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 
 ### 📖 Reference & Learning
 | **[FEATURES.md](FEATURES.md)** | ✨ Complete feature list |
+| **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** | 🚀 Voice, files, and advanced tools |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)** | 🏗️ System architecture diagrams |
 | **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** | 📊 What was built |
 | **[FILE_MANIFEST.md](FILE_MANIFEST.md)** | 📁 Complete file listing |
@@ -77,9 +90,12 @@ A professional, modern web chat application built with Next.js, TypeScript, and 
 ### 🤝 Contributing
 | **[CONTRIBUTING.md](CONTRIBUTING.md)** | 💡 How to contribute |
 
-### 📋 Navigation
+### 📋 Navigation & Summary
 | **[DOCS_INDEX.md](DOCS_INDEX.md)** | 🗺️ Documentation map |
 | **[PROJECT_COMPLETE.md](PROJECT_COMPLETE.md)** | 🎉 Project completion summary |
+| **[WHATS_NEW.md](WHATS_NEW.md)** | 🆕 Recent updates and changes |
+| **[FINAL_SUMMARY.md](FINAL_SUMMARY.md)** | 📋 Complete project overview |
+| **[QUICK_REFERENCE.md](QUICK_REFERENCE.md)** | ⚡ Fast answers and tips |
 
 ## Getting Started
 
@@ -110,8 +126,10 @@ npm install
 2. Go to your project's SQL Editor
 3. Copy and paste the entire `supabase-schema.sql` file
 4. Click "Run" to execute the schema
-5. Enable Realtime for: messages, reactions, typing_indicators, profiles
+5. Create storage bucket named `chat-files` (or schema creates it)
 6. Go to Project Settings > API to get your credentials
+
+> ✅ **Real-time works automatically!** No need to enable Replication dashboard!
 
 ### 4. Configure Environment Variables
 

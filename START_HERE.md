@@ -73,20 +73,29 @@ Open [http://localhost:3000](http://localhost:3000)
 | **PROJECT_SUMMARY.md** | What was built | To understand scope |
 | **FILE_MANIFEST.md** | Complete file list | To see all files |
 | **CONTRIBUTING.md** | How to contribute | To help improve |
+| **ADVANCED_FEATURES.md** | Voice & file features | 🚀 NEW advanced tools! |
+| **WHATS_NEW.md** | Recent updates | See what's new |
+| **FINAL_SUMMARY.md** | Complete overview | Full project summary |
 
 ---
 
 ## 🎯 What You Get
 
 ### Features
-✅ Real-time messaging  
+✅ Real-time messaging (works everywhere!)  
+✅ Voice messages with recording  
+✅ File sharing with drag & drop  
+✅ Image preview and display  
+✅ Audio playback controls  
 ✅ Emoji reactions  
 ✅ Typing indicators  
 ✅ User presence (online/offline)  
 ✅ Multiple chat rooms  
 ✅ Message editing & deletion  
 ✅ Beautiful, modern UI  
-✅ Mobile responsive  
+✅ Mobile responsive
+
+> 🚀 **[ADVANCED_FEATURES.md](ADVANCED_FEATURES.md)** - Learn about voice messages, file uploads, and more!  
 
 ### Tech Stack
 - Next.js 14

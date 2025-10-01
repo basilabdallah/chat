@@ -45,19 +45,34 @@ supabase link --project-ref your-project-ref
 supabase db push
 ```
 
-### 3. Enable Realtime
+### 3. ✅ Realtime Works Automatically!
 
-Realtime must be enabled for the chat to work properly.
+**IMPORTANT UPDATE**: Realtime now works **WITHOUT** the Replication dashboard!
 
-1. Go to **Database** > **Replication** in the left sidebar
-2. Find and enable replication for these tables:
-   - ✅ `messages`
-   - ✅ `reactions`
-   - ✅ `typing_indicators`
-   - ✅ `profiles`
-3. Click **Save** after enabling each table
+❌ **OLD WAY** (Skip this - no longer needed!):
+~~Enable Database > Replication~~ **NOT REQUIRED**
 
-### 4. Get Your API Credentials
+✅ **NEW WAY** (Automatic!):
+- Uses Supabase Broadcast Channels
+- **NO configuration needed**
+- Works in ALL Supabase regions
+- Works even if Replication says "coming soon"!
+
+**What this means**: Your app has real-time messaging immediately after running the schema. No extra steps needed!
+
+### 4. Create Storage Bucket
+
+The app needs a storage bucket for voice messages and file uploads.
+
+1. Go to **Storage** in the left sidebar
+2. Click **"New bucket"**
+3. Enter bucket name: `chat-files`
+4. Select **Public bucket** (checkbox)
+5. Click **"Create bucket"**
+
+> **Note**: The SQL schema tries to create this automatically, but if it fails, create it manually using the steps above.
+
+### 5. Get Your API Credentials
 
 1. Click the **Settings** gear icon in the left sidebar
 2. Click **API** in the settings menu
@@ -75,7 +90,7 @@ Realtime must be enabled for the chat to work properly.
 
 4. Copy both of these - you'll need them next!
 
-### 5. Configure Your Environment
+### 6. Configure Your Environment
 
 1. In your project root, copy the example file:
    ```bash
@@ -90,7 +105,7 @@ Realtime must be enabled for the chat to work properly.
 
 3. Replace the values with what you copied in step 4
 
-### 6. Verify the Setup
+### 7. Verify the Setup
 
 You can verify everything is set up correctly in Supabase:
 
@@ -109,7 +124,7 @@ You can verify everything is set up correctly in Supabase:
    - **description**: Welcome to the general chat room!
    - **type**: channel
 
-### 7. Optional: Configure Auth Settings
+### 8. Optional: Configure Auth Settings
 
 For development, you might want to disable email confirmation:
 
