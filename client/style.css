@@ -1,0 +1,40 @@
+body {
+  font-family: 'Courier New', Courier, monospace;
+  background-color: #1a1a1a;
+  color: #00ff00;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+#game-container {
+  width: 80%;
+  max-width: 800px;
+  height: 90vh;
+  border: 2px solid #00ff00;
+  background-color: #000;
+  display: flex;
+  flex-direction: column;
+}
+
+#chat-log {
+  flex-grow: 1;
+  padding: 10px;
+  overflow-y: auto;
+  border-bottom: 2px solid #00ff00;
+}
+
+#chat-input {
+  border: none;
+  background-color: #000;
+  color: #00ff00;
+  padding: 10px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+#chat-input:focus {
+  outline: none;
+}
