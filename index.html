@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Chat Adventure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="blocker">
+        <div id="instructions">
+            <p style="font-size: 36px">انقر للبدء</p>
+            <p>
+                تحرك: WASD<br>
+                انظر حولك: حرك الفأرة
+            </p>
+        </div>
+    </div>
+    <div id="chat-container">
+        <div id="chat-log"></div>
+        <input type="text" id="chat-input" placeholder="اكتب رسالتك هنا...">
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Using Import Maps for JS Modules -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.module.js",
+            "three/addons/": "https://threejs.org/examples/jsm/"
+        }
+    }
+    </script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
