@@ -1,69 +1,64 @@
 const express = require('express');
 const http = require('http');
-const socketIo = require('socket.io');
+const { Server } = require("socket.io");
 const path = require('path');
-const game = require('./game');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = new Server(server);
 
-const PORT = process.env.PORT || 3000;
+app.use(express.static(path.join(__dirname, '..')));
 
-app.use(express.static(path.join(__dirname, '../client')));
+const players = {};
+const npc = {
+    name: "Wizard",
+    dialogue: [
+        "Welcome, traveler!",
+        "This world is full of secrets. Can you uncover them?",
+        "Beware the Whispering Woods to the north...",
+        "I can offer you a quest, if you are brave enough. Just say 'quest'."
+    ],
+    dialogueIndex: 0
+};
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
-  const player = {
-    id: socket.id,
-    currentRoom: 'start',
-  };
-  game.world.players[socket.id] = player;
+    console.log(`Player connected: ${socket.id}`);
 
-  socket.emit('message', 'Welcome to the game!');
-  socket.emit('message', game.getRoom(player.currentRoom).description);
+    players[socket.id] = { id: socket.id, position: { x: 0, y: 1, z: 0 }, rotation: { x: 0, y: 0, z: 0 } };
+    socket.emit('currentPlayers', players);
+    socket.broadcast.emit('newPlayer', players[socket.id]);
 
-  socket.on('command', (command) => {
-    const [action, ...args] = command.split(' ');
-    const arg = args.join(' ');
+    socket.on('disconnect', () => {
+        console.log(`Player disconnected: ${socket.id}`);
+        delete players[socket.id];
+        io.emit('playerDisconnected', socket.id);
+    });
 
-    switch (action) {
-      case 'go':
-        const room = game.getRoom(player.currentRoom);
-        if (room.exits[arg]) {
-          player.currentRoom = room.exits[arg];
-          socket.emit('message', game.getRoom(player.currentRoom).description);
-        } else {
-          socket.emit('message', 'You can\'t go that way.');
+    socket.on('playerMovement', (movementData) => {
+        if (players[socket.id]) {
+            players[socket.id].position = movementData.position;
+            players[socket.id].rotation = movementData.rotation;
+            socket.broadcast.emit('playerMoved', players[socket.id]);
         }
-        break;
-      case 'look':
-        const currentRoom = game.getRoom(player.currentRoom);
-        let description = currentRoom.description;
-        if (currentRoom.npcs) {
-            description += ' You see ' + currentRoom.npcs.map(npcId => game.world.npcs[npcId].name).join(', ') + '.';
-        }
-        socket.emit('message', description);
-        break;
-      case 'talk':
-        const npcId = arg.toLowerCase();
-        const roomNpcs = game.getRoom(player.currentRoom).npcs || [];
-        if (roomNpcs.includes(npcId) && game.world.npcs[npcId]) {
-            socket.emit('message', `You talk to ${game.world.npcs[npcId].name}.`);
-            socket.emit('message', `"${game.world.npcs[npcId].dialogue}"`);
-        } else {
-            socket.emit('message', 'There is no one here by that name to talk to.');
-        }
-        break;
-    }
-  });
+    });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
-    delete game.world.players[socket.id];
-  });
+    socket.on('chatMessage', (msg) => {
+        // Check for commands
+        if (msg.toLowerCase().trim() === 'talk') {
+            const dialogue = npc.dialogue[npc.dialogueIndex];
+            npc.dialogueIndex = (npc.dialogueIndex + 1) % npc.dialogue.length; // Cycle through dialogue
+            io.emit('chatMessage', { id: 'NPC', message: dialogue });
+        } else if (msg.toLowerCase().trim() === 'quest') {
+             io.emit('chatMessage', { id: 'NPC', message: "A quest will be available in a future update! For now, explore." });
+        }
+        else {
+            // Broadcast normal chat message
+            io.emit('chatMessage', { id: socket.id, message: msg });
+        }
+    });
 });
 
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
